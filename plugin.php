@@ -6,9 +6,9 @@ add_action( 'plugins_loaded', 'WPAPIYoast_init' );
  * Plugin Name: Yoast to REST API
  * Description: Adds Yoast fields to page and post metadata to WP REST API responses
  * Author: Niels Garve, Pablo Postigo, Tedy Warsitha, Charlie Francis
- * Author URI: https://github.com/niels-garve
- * Version: 1.4.1
- * Plugin URI: https://github.com/niels-garve/yoast-to-rest-api
+ * Author URI: https://github.com/jaycholland
+ * Version: 1.4.2
+ * Plugin URI: https://github.com/jaycholland/yoast-to-rest-api
  */
 class Yoast_To_REST_API {
 
@@ -18,6 +18,7 @@ class Yoast_To_REST_API {
 		'yoast_wpseo_metadesc',
 		'yoast_wpseo_linkdex',
 		'yoast_wpseo_metakeywords',
+		'yoast_wpseo_robots',
 		'yoast_wpseo_meta-robots-noindex',
 		'yoast_wpseo_meta-robots-nofollow',
 		'yoast_wpseo_meta-robots-adv',
@@ -130,7 +131,19 @@ class Yoast_To_REST_API {
 			'yoast_wpseo_title'     => $wpseo_frontend->get_content_title(),
 			'yoast_wpseo_metadesc'  => $wpseo_frontend->metadesc( false ),
 			'yoast_wpseo_canonical' => $wpseo_frontend->canonical( false ),
+			'yoast_wpseo_robots' => $wpseo_frontend->robots_for_single_post(null, $p['id']),
 		);
+
+		/**
+		 * Filter the returned yoast meta.
+		 *
+		 * @since 1.4.2
+		 * @param array $yoast_meta Array of metadata to return from Yoast.
+		 * @param \WP_Post $p The current post object.
+		 * @param \WP_REST_Request $request The REST request.
+		 * @return array $yoast_meta Filtered meta array.
+		 */
+		$yoast_meta = apply_filters( 'wpseo_to_api_yoast_meta', $yoast_meta, $p, $request );
 
 		wp_reset_query();
 
@@ -145,6 +158,15 @@ class Yoast_To_REST_API {
 			'yoast_wpseo_title'    => $wpseo_frontend->get_taxonomy_title(),
 			'yoast_wpseo_metadesc' => $wpseo_frontend->metadesc( false ),
 		);
+
+		/**
+		 * Filter the returned yoast meta for a taxonomy.
+		 *
+		 * @since 1.4.2
+		 * @param array $yoast_meta Array of metadata to return from Yoast.
+		 * @return array $yoast_meta Filtered meta array.
+		 */
+		$yoast_meta = apply_filters( 'wpseo_to_api_yoast_taxonomy_meta', $yoast_meta );
 
 		return (array) $yoast_meta;
 	}
